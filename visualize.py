@@ -130,7 +130,7 @@ def sample_top_interactions_embeddings(user_embeddings_pool, user_ids_pool, item
 #%%
 # Declare function: Visualize embeddings using t-SNE
 
-# visualize embeddings using t-SNE
+# visualize embeddings using t-SNE or PCA
 def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne', n_iter=10000, perplexity=10):
     # concat item and user embeddings
     X = np.concatenate((sampled_center_embeddings, sampled_neighbor_embeddings), axis=0)
@@ -182,10 +182,10 @@ sampled_center_embeddings, sampled_neighbor_embeddings, average_precision_at_n =
 print(f"Average precision@{num_neighbor_samples} for pseudo un-trained embeddings: {average_precision_at_n}")
 
 # visualize with T-SNE
-# plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne')
+plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne')
 
 # visualize with PCA
-plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='pca')
+# plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='pca')
 
 #%%
 # visualize trained embeddings
@@ -200,9 +200,9 @@ sampled_center_embeddings, sampled_neighbor_embeddings, average_precision_at_n =
 print(f"Average precision@{num_neighbor_samples} for trained embeddings: {average_precision_at_n}")
 
 # visualize with T-SNE
-# plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne')
+plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne')
 
 # visualize with PCA
-plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='pca')
+# plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='pca')
 
 #%%
