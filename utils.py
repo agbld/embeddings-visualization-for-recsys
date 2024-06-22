@@ -119,32 +119,32 @@ def sample_nearest_neighbors(center_embeddings_pool, neighbor_embeddings_pool, s
     sampled_neighbor_embeddings = sampled_neighbor_embeddings.reshape(-1, sampled_neighbor_embeddings.shape[-1])
     return sampled_center_embeddings, sampled_neighbor_embeddings
 
-def sample_best_perform_user_item_interactions(user_embeddings_pool, user_ids_pool, item_embeddings_pool, item_ids_pool, ratings, num_users=5, n=10):
+def sample_best_perform_user_item_interactions(center_embeddings_pool, center_ids_pool, neighbor_embeddings_pool, neighbor_ids_pool, ratings, c=5, n=10):
     """Sample the best performed user embeddings and their nearest rated item embeddings according to the precision@n
 
     Parameters
     ----------
-    user_embeddings_pool : np.array
-        The pool of user embeddings.
-    user_ids_pool : np.array
-        The pool of user ids which correspond to the user embeddings.
-    item_embeddings_pool : np.array
-        The pool of item embeddings.
-    item_ids_pool : np.array
-        The pool of item ids which correspond to the item embeddings.
+    center_embeddings_pool : np.array
+        The pool of center node embeddings.
+    center_ids_pool : np.array
+        The pool of center node ids which correspond to the center node embeddings.
+    neighbor_embeddings_pool : np.array
+        The pool of neighbor node embeddings.
+    neighbor_ids_pool : np.array
+        The pool of neighbor node ids which correspond to the neighbor node embeddings.
     ratings : pd.DataFrame
-        The ratings DataFrame from `load_ratings()` function.
-    num_users : int
-        The number of users to sample.
+        The ratings DataFrame contain two columns: 'center_id' and 'neighbor_id'.
+    c : int
+        The number of center nodes to sample.
     n : int
-        The number of nearest neighbors to sample for each user.
+        The number of nearest neighbors to sample for each center node.
 
     Returns
     -------
     np.array
-        The sampled user embeddings.
+        The sampled center node embeddings.
     np.array
-        The sampled item embeddings.
+        The sampled neighbor node embeddings.
     float
         The global precision@n.
     float
@@ -152,45 +152,45 @@ def sample_best_perform_user_item_interactions(user_embeddings_pool, user_ids_po
     """
 
     # calculate the predicted ratings
-    predicted_ratings = np.dot(user_embeddings_pool.astype(float), item_embeddings_pool.T.astype(float))
+    predicted_ratings = np.dot(center_embeddings_pool.astype(float), neighbor_embeddings_pool.T.astype(float))
 
     # get the nearest n neighbors for each center embedding
-    nearest_n_item_indices = np.argsort(predicted_ratings, axis=1)[:, -n:]
-    nearest_n_items_id = item_ids_pool[nearest_n_item_indices]
+    nearest_n_neighbor_indices = np.argsort(predicted_ratings, axis=1)[:, -n:]
+    nearest_n_neighbor_ids = neighbor_ids_pool[nearest_n_neighbor_indices]
 
     # calculate the precision@n with ratings as the ground truth
     precision_at_n = []
-    for i in range(len(user_embeddings_pool)):
+    for i in range(len(center_embeddings_pool)):
         # user_embedding = user_embeddings_pool[i]
-        user_id = user_ids_pool[i]
-        user_ratings = ratings[ratings['user_id'] == user_id]
-        top_n_neighbors_for_user = nearest_n_items_id[i]
-        precision_at_n_for_user = len(user_ratings[user_ratings['item_id'].isin(top_n_neighbors_for_user)]) / n
-        precision_at_n.append(precision_at_n_for_user)
+        center_id = center_ids_pool[i]
+        rating = ratings[ratings['center_id'] == center_id]
+        nearest_n_neighbor_ids_for_the_center = nearest_n_neighbor_ids[i]
+        precision_at_n_for_the_center = len(rating[rating['neighbor_id'].isin(nearest_n_neighbor_ids_for_the_center)]) / n
+        precision_at_n.append(precision_at_n_for_the_center)
 
     # pick top N user indices with highest precision@n
-    top_user_indices = np.argsort(precision_at_n)[-num_users:]
+    best_performed_center_indices = np.argsort(precision_at_n)[-c:]
     global_precision_at_n = np.mean(precision_at_n)
-    sampled_precision_at_n = np.mean(np.array(precision_at_n)[top_user_indices])
+    sampled_precision_at_n = np.mean(np.array(precision_at_n)[best_performed_center_indices])
 
     # sample the nearest rated item embeddings for each top user
-    top_item_embeddings = []
-    for user_index in top_user_indices:
-        user_embedding = user_embeddings_pool[user_index]
-        user_id = user_ids_pool[user_index]
-        user_ratings = ratings[ratings['user_id'] == user_id]
-        user_rated_item_ids = user_ratings['item_id'].values
-        user_rated_item_indices = np.where(np.isin(item_ids_pool, user_rated_item_ids))[0]
-        user_rated_item_embeddings = item_embeddings_pool[user_rated_item_indices]
-        _, sampled_neighbor_embeddings = sample_nearest_neighbors(np.array([user_embedding]), 
-                                                                                           user_rated_item_embeddings, 
+    sampled_neighbor_embeddings = []
+    for center_index in best_performed_center_indices:
+        center_embedding = center_embeddings_pool[center_index]
+        center_id = center_ids_pool[center_index]
+        rating = ratings[ratings['center_id'] == center_id]
+        center_interacted_neighbor_ids = rating['neighbor_id'].values
+        center_interacted_neighbor_indices = np.where(np.isin(neighbor_ids_pool, center_interacted_neighbor_ids))[0]
+        center_interacted_neighbor_embeddings = neighbor_embeddings_pool[center_interacted_neighbor_indices]
+        _, sampled_neighbor_embeddings_for_the_center = sample_nearest_neighbors(np.array([center_embedding]), 
+                                                                                           center_interacted_neighbor_embeddings, 
                                                                                            sample_size=1, 
                                                                                            neighbor_size=n)
-        top_item_embeddings.append(sampled_neighbor_embeddings)
+        sampled_neighbor_embeddings.append(sampled_neighbor_embeddings_for_the_center)
 
-    user_embeddings = user_embeddings_pool[top_user_indices]
-    top_item_embeddings = np.array(top_item_embeddings).reshape(-1, top_item_embeddings[0].shape[-1])
-    return user_embeddings, top_item_embeddings, global_precision_at_n, sampled_precision_at_n
+    center_embeddings = center_embeddings_pool[best_performed_center_indices]
+    sampled_neighbor_embeddings = np.array(sampled_neighbor_embeddings).reshape(-1, sampled_neighbor_embeddings[0].shape[-1])
+    return center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n
 
 def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne', n_iter=10000, perplexity=10):
     """Visualize the embeddings using t-SNE or PCA.

@@ -21,6 +21,10 @@ print("Unique users: ", ratings['user_id'].nunique())
 print("Unique items: ", ratings['item_id'].nunique())
 print()
 
+# rename columns
+ratings.columns = ['center_id', 'neighbor_id', 'rating', 'timestamp'] # create user centered visualization.
+# ratings.columns = ['neighbor_id', 'center_id', 'rating', 'timestamp'] # create item centered visualization.
+
 #%%
 # Load the user and item embeddings
 
@@ -49,13 +53,25 @@ num_neighbor_samples = 20  # number of nearest rated item embeddings to sample
 
 # visualize pseudo un-trained embeddings
 print("Visualizing pseudo un-trained embeddings...")
+
+# user centered visualization
 sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(user_embeddings_init, 
                                                                                                                     user_ids, 
                                                                                                                     item_embeddings_init, 
                                                                                                                     item_ids, 
                                                                                                                     ratings, 
-                                                                                                                    num_users=num_center_samples, 
+                                                                                                                    c=num_center_samples, 
                                                                                                                     n=num_neighbor_samples)
+
+# item centered visualization
+# sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(item_embeddings_init,
+#                                                                                                                     item_ids,
+#                                                                                                                     user_embeddings_init,
+#                                                                                                                     user_ids,
+#                                                                                                                     ratings,
+#                                                                                                                     c=num_center_samples,
+#                                                                                                                     n=num_neighbor_samples)
+
 print(f"Global precision@{num_neighbor_samples} for pseudo un-trained embeddings: {global_precision_at_n:0.4f}")
 print(f"Sampled precision@{num_neighbor_samples} for pseudo un-trained embeddings: {sampled_precision_at_n:0.4f}")
 
@@ -70,13 +86,25 @@ plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_cent
 
 # visualize trained embeddings
 print("Visualizing trained embeddings...")
+
+# user centered visualization
 sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(user_embeddings, 
                                                                                                                     user_ids, 
                                                                                                                     item_embeddings, 
                                                                                                                     item_ids, 
                                                                                                                     ratings, 
-                                                                                                                    num_users=num_center_samples, 
+                                                                                                                    c=num_center_samples, 
                                                                                                                     n=num_neighbor_samples)
+
+# item centered visualization
+# sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(item_embeddings,
+#                                                                                                                     item_ids,   
+#                                                                                                                     user_embeddings,
+#                                                                                                                     user_ids,
+#                                                                                                                     ratings,
+#                                                                                                                     c=num_center_samples,
+#                                                                                                                     n=num_neighbor_samples)
+
 print(f"Global precision@{num_neighbor_samples} for trained embeddings: {global_precision_at_n:0.4f}")
 print(f"Sampled precision@{num_neighbor_samples} for trained embeddings: {sampled_precision_at_n:0.4f}")
 
