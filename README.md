@@ -1,5 +1,7 @@
 # embeddings-visualization-for-recsys
 
+(this file is under development, some of following contents may not be accurate)
+
 ## Quick Start
 Run `visualize.py`. 
 
@@ -10,7 +12,7 @@ Expected executed results should be like `executed_result_visualize_pca.html` or
 ## Features
 
 ### 1. Visualize Embeddings
-Visualize embeddings in 2D space using PCA or t-SNE. Please see `# Sample and visualize the embeddings with pseudo un-trained embeddings` and `# Sample and visualize the embeddings with trained embeddings` section in `visualize.py` for more details.
+Visualize embeddings in 2D space using PCA or t-SNE. Please see `# Sample and visualize the embeddings with pseudo un-trained embeddings` and `# Sample and visualize the embeddings with trained embeddings` section in `visualize_interactions.py` for more details.
 
 ### 2. Comparison of Embeddings Before and After Training
 The `# Generate pseudo un-trained embeddings using Xavier initialization.` section provides a way to generate **pseudo un-trained embeddings** using *Xavier initialization* or *Random initialization*. By using the generated pseudo un-trained embeddings, you can compare the embeddings before and after training.

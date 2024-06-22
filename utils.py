@@ -192,10 +192,10 @@ def sample_best_perform_user_item_interactions(center_embeddings_pool, center_id
     sampled_neighbor_embeddings = np.array(sampled_neighbor_embeddings).reshape(-1, sampled_neighbor_embeddings[0].shape[-1])
     return center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n
 
-def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_center_samples, num_neighbor_samples, method='tsne', n_iter=10000, perplexity=10):
+def plot_embeddings_heterogeneous(sampled_center_embeddings, sampled_neighbor_embeddings, method='tsne', n_iter=10000, perplexity=10, center_dot_size=30, neighbor_dot_size=10):
     """Visualize the embeddings using t-SNE or PCA.
     
-    Parameters
+    Parameters`
     ----------
     sampled_center_embeddings : np.array
         The sampled center embeddings.
@@ -211,6 +211,10 @@ def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_
         The number of iterations for t-SNE. Default is 10000.
     perplexity : int
         The perplexity for t-SNE. Default is 10. This parameter is related to the number of `num_neighbor_samples`, consider changing it if the visualization is not clear.
+    center_dot_size : int
+        The size of the center dots in the plot.
+    neighbor_dot_size : int
+        The size of the neighbor dots in the plot.
 
     Returns
     -------
@@ -218,12 +222,14 @@ def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_
     """
 
     # concat item and user embeddings
+    num_center_samples = sampled_center_embeddings.shape[0]
+    num_neighbor_samples = sampled_neighbor_embeddings.shape[0] // num_center_samples
     X = np.concatenate((sampled_center_embeddings, sampled_neighbor_embeddings), axis=0)
 
     if method == 'tsne':
         # t-SNE
         X_embedded = TSNE(n_components=2, learning_rate='auto',
-                        init='random', n_iter=10000, perplexity=10, verbose=False).fit_transform(X)
+                        init='random', n_iter=n_iter, perplexity=perplexity, verbose=False).fit_transform(X)
     elif method == 'pca':
         # PCA
         X_embedded = PCA(n_components=2).fit_transform(X)
@@ -240,11 +246,49 @@ def plot_embeddings(sampled_center_embeddings, sampled_neighbor_embeddings, num_
     for i in range(num_center_samples):
         # plot center embeddings with color based on hue and 100% brightness, 100% saturation
         r, g, b = colorsys.hsv_to_rgb(hue, 1, 0.7)
-        plt.scatter(sampled_center_embeddings_tsne[i, 0], sampled_center_embeddings_tsne[i, 1], label='center', s=30, c=[[r, g, b]])
+        plt.scatter(sampled_center_embeddings_tsne[i, 0], sampled_center_embeddings_tsne[i, 1], label='center', s=center_dot_size, c=[[r, g, b]])
         for j in range(num_neighbor_samples):
             # plot neighbor embeddings with color based on hue and 100% brightness, 50% saturation
             r, g, b = colorsys.hsv_to_rgb(hue, 0.7, 0.7)
-            plt.scatter(sampled_neighbor_embeddings_tsne[i*num_neighbor_samples+j, 0], sampled_neighbor_embeddings_tsne[i*num_neighbor_samples+j, 1], label='neighbor', s=10, c=[[r, g, b]])
+            plt.scatter(sampled_neighbor_embeddings_tsne[i*num_neighbor_samples+j, 0], sampled_neighbor_embeddings_tsne[i*num_neighbor_samples+j, 1], label='neighbor', s=neighbor_dot_size, c=[[r, g, b]])
         hue += hue_step
 
+    plt.show()
+
+def plot_embeddings_homogeneous(sampled_embeddings, method='tsne', n_iter=10000, perplexity=10, dot_size=10):
+    """Visualize the embeddings using t-SNE or PCA.
+    
+    Parameters`
+    ----------
+    sampled_embeddings : np.array
+        The sampled embeddings.
+    num_samples : int
+        The number of embeddings sampled.
+    method : str
+        The method to use for visualization. Choose either 'tsne' or 'pca'.
+    n_iter : int
+        The number of iterations for t-SNE. Default is 10000.
+    perplexity : int
+        The perplexity for t-SNE. Default is 10. This parameter is related to the number of `num_samples`, consider changing it if the visualization is not clear.
+    dot_size : int
+        The size of the dots in the plot.
+
+    Returns
+    -------
+    None
+    """
+
+    if method == 'tsne':
+        # t-SNE
+        X_embedded = TSNE(n_components=2, learning_rate='auto',
+                        init='random', n_iter=n_iter, perplexity=perplexity, verbose=False).fit_transform(sampled_embeddings)
+    elif method == 'pca':
+        # PCA
+        X_embedded = PCA(n_components=2).fit_transform(sampled_embeddings)
+    else:
+        raise ValueError("Invalid method. Choose either 'tsne' or 'pca'.")
+    
+    # plot the embeddings
+    plt.figure(figsize=(10, 10))
+    plt.scatter(X_embedded[:, 0], X_embedded[:, 1], s=dot_size)
     plt.show()
