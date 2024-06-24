@@ -50,6 +50,7 @@ print("Item embeddings pseudo init shape: ", item_embeddings_init.shape)
 
 num_center_samples = 5 # number of user embeddings to sample
 num_neighbor_samples = 20  # number of nearest rated item embeddings to sample
+n=20 # precision@n
 
 # visualize pseudo un-trained embeddings
 print("Visualizing pseudo un-trained embeddings...")
@@ -59,18 +60,22 @@ print("Visualizing pseudo un-trained embeddings...")
 #                                                                                                                     user_ids, 
 #                                                                                                                     item_embeddings_init, 
 #                                                                                                                     item_ids, 
-#                                                                                                                     ratings, 
-#                                                                                                                     c=num_center_samples, 
-#                                                                                                                     n=num_neighbor_samples)
+#                                                                                                                     ratings_sampling=ratings,
+#                                                                                                                     ratings_validation=ratings,
+#                                                                                                                     num_centers=num_center_samples,
+#                                                                                                                     num_neighbors=num_neighbor_samples,
+#                                                                                                                     n=n)
 
 # item centered visualization
 sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(item_embeddings_init,
                                                                                                                     item_ids,
                                                                                                                     user_embeddings_init,
                                                                                                                     user_ids,
-                                                                                                                    ratings,
-                                                                                                                    c=num_center_samples,
-                                                                                                                    n=num_neighbor_samples)
+                                                                                                                    ratings_sampling=ratings,
+                                                                                                                    ratings_validation=ratings,
+                                                                                                                    num_centers=num_center_samples,
+                                                                                                                    num_neighbors=num_neighbor_samples,
+                                                                                                                    n=n)
 
 print(f"Global precision@{num_neighbor_samples} for pseudo un-trained embeddings: {global_precision_at_n:0.4f}")
 print(f"Sampled precision@{num_neighbor_samples} for pseudo un-trained embeddings: {sampled_precision_at_n:0.4f}")
@@ -92,18 +97,22 @@ print("Visualizing trained embeddings...")
 #                                                                                                                     user_ids, 
 #                                                                                                                     item_embeddings, 
 #                                                                                                                     item_ids, 
-#                                                                                                                     ratings, 
-#                                                                                                                     c=num_center_samples, 
-#                                                                                                                     n=num_neighbor_samples)
+#                                                                                                                     ratings_sampling=ratings,
+#                                                                                                                     ratings_validation=ratings,
+#                                                                                                                     num_centers=num_center_samples,
+#                                                                                                                     num_neighbors=num_neighbor_samples,
+#                                                                                                                     n=n)
 
 # item centered visualization
 sampled_center_embeddings, sampled_neighbor_embeddings, global_precision_at_n, sampled_precision_at_n = sample_best_perform_user_item_interactions(item_embeddings,
                                                                                                                     item_ids,   
                                                                                                                     user_embeddings,
                                                                                                                     user_ids,
-                                                                                                                    ratings,
-                                                                                                                    c=num_center_samples,
-                                                                                                                    n=num_neighbor_samples)
+                                                                                                                    ratings_sampling=ratings,
+                                                                                                                    ratings_validation=ratings,
+                                                                                                                    num_centers=num_center_samples,
+                                                                                                                    num_neighbors=num_neighbor_samples,
+                                                                                                                    n=n)
 
 print(f"Global precision@{num_neighbor_samples} for trained embeddings: {global_precision_at_n:0.4f}")
 print(f"Sampled precision@{num_neighbor_samples} for trained embeddings: {sampled_precision_at_n:0.4f}")
